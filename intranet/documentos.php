@@ -100,6 +100,17 @@
       border-color: rgba(0,0,0,0.05);
     }
 
+    .table-responsive {
+      overflow: visible !important;
+    }
+
+    .talento-humano-wrapper {
+      margin: 1.5rem auto 3rem;
+      display: flex;
+      justify-content: center;
+      max-width: 360px;
+    }
+
     .tooltip-text {
       position: absolute;
       top: -2.5rem;
@@ -217,7 +228,7 @@
       </div>
     </div>
     
-    <div style="margin-top: 2rem; text-align: center;">
+    <div class="talento-humano-wrapper">
       <div class="icon-container">
         <span class="tooltip-text">Abrir carpeta</span>
         <button class="btn btn-outline-primary d-inline-flex align-items-center gap-2" onclick="abrirCarpeta()">

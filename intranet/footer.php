@@ -102,7 +102,7 @@
           object-fit: contain;
           filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));
           transition: transform 0.3s ease, filter 0.3s ease;
-          cursor: pointer;
+          cursor: default;
         }
 
         .logo-footer:hover {

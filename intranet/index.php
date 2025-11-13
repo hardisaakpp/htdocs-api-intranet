@@ -49,9 +49,22 @@
           left: 0;
           right: 0;
           bottom: 0;
-          background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.1) 100%);
+          background: linear-gradient(
+            to bottom, 
+            rgba(0,0,0,0) 0%, 
+            rgba(0,0,0,0.05) 50%,
+            rgba(0,0,0,0.15) 100%
+          );
           z-index: 1;
           pointer-events: none;
+          transition: opacity 0.8s ease;
+        }
+
+
+        .carousel-item {
+          position: relative;
+          overflow: hidden;
+          transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease;
         }
 
         .carousel-item img {
@@ -65,8 +78,40 @@
           transform: scale(1);
         }
 
+        .carousel-item.active:hover img {
+          transform: scale(1.1);
+        }
+
         .carousel-item:not(.active) img {
           transform: scale(1.05);
+        }
+
+        /* Efecto de brillo animado sutil en el item activo */
+        .carousel-item.active::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.15),
+            transparent
+          );
+          animation: shimmer 4s infinite;
+          z-index: 3;
+          pointer-events: none;
+        }
+
+        @keyframes shimmer {
+          0% {
+            left: -100%;
+          }
+          100% {
+            left: 100%;
+          }
         }
 
         /* Indicadores modernos */
@@ -113,10 +158,12 @@
           transform: translateY(-50%);
           opacity: 0;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(240, 240, 240, 0.85);
           backdrop-filter: blur(10px);
           border-radius: 50%;
           margin: 0 1rem;
+          border: 2px solid rgba(180, 180, 180, 0.4);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .carousel:hover .carousel-control-prev,
@@ -124,11 +171,23 @@
           opacity: 1;
         }
 
+        .carousel-control-prev.hide-controls,
+        .carousel-control-next.hide-controls {
+          opacity: 0 !important;
+          pointer-events: none;
+        }
+
+        .carousel:hover .carousel-control-prev.hide-controls,
+        .carousel:hover .carousel-control-next.hide-controls {
+          opacity: 0 !important;
+        }
+
         .carousel-control-prev:hover,
         .carousel-control-next:hover {
-          background: rgba(255, 255, 255, 0.2);
+          background: rgba(250, 250, 250, 0.95);
           transform: translateY(-50%) scale(1.1);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+          border-color: rgba(150, 150, 150, 0.5);
         }
 
         .carousel-control-prev {
@@ -144,8 +203,38 @@
           width: 24px;
           height: 24px;
           background-size: 24px 24px;
-          filter: brightness(0) invert(1);
+          filter: brightness(0) saturate(0%) opacity(0.6);
           transition: transform 0.3s ease;
+        }
+
+        .carousel-control-prev:hover .carousel-control-prev-icon,
+        .carousel-control-next:hover .carousel-control-next-icon {
+          filter: brightness(0) saturate(0%) opacity(0.8);
+        }
+
+        /* Estilos para modo oscuro */
+        [data-bs-theme="dark"] .carousel-control-prev,
+        [data-bs-theme="dark"] .carousel-control-next {
+          background: rgba(80, 80, 80, 0.85);
+          border: 2px solid rgba(200, 200, 200, 0.4);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-bs-theme="dark"] .carousel-control-prev:hover,
+        [data-bs-theme="dark"] .carousel-control-next:hover {
+          background: rgba(120, 120, 120, 0.95);
+          border-color: rgba(220, 220, 220, 0.5);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        [data-bs-theme="dark"] .carousel-control-prev-icon,
+        [data-bs-theme="dark"] .carousel-control-next-icon {
+          filter: brightness(0) invert(1) opacity(0.9);
+        }
+
+        [data-bs-theme="dark"] .carousel-control-prev:hover .carousel-control-prev-icon,
+        [data-bs-theme="dark"] .carousel-control-next:hover .carousel-control-next-icon {
+          filter: brightness(0) invert(1) opacity(1);
         }
 
         .carousel-control-prev:hover .carousel-control-prev-icon {
@@ -155,13 +244,6 @@
         .carousel-control-next:hover .carousel-control-next-icon {
           transform: translateX(2px);
         }
-
-        /* Efecto de transición suave */
-        .carousel-item {
-          transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease;
-        }
-
-        /* Overlay decorativo en los bordes - removido para que coincida con el fondo */
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -185,6 +267,7 @@
           .carousel-indicators [type="button"].active {
             width: 30px;
           }
+
         }
 
         /* Tarjetas modernas */
@@ -373,8 +456,9 @@
               <div class="feature-card">
                 <div class="feature-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M14 4.5V14a2 2 0 0 1-2 2v-1a1 1 0 0 0 1-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5z"/>
-                    <path d="M4.603 14.087a.81.81 0 0 1-.438-.42c-.195-.388-.13-.776.08-1.102.198-.307.526-.568.897-.787a7.68 7.68 0 0 1 1.482-.645 19.701 19.701 0 0 0 6.74-6.74 19.7 19.7 0 0 0-1.582-2.142.807.807 0 0 0-.84-.233 8.5 8.5 0 0 1-1.482.645c-.37.22-.7.48-.898.787a.826.826 0 0 1-.375.548c-.153.1-.312.197-.474.29a19.722 19.722 0 0 1-5.487 2.466c-.192.044-.38.09-.562.136a.81.81 0 0 1-.483-.067 9.977 9.977 0 0 1-2.106-4.169 9.98 9.98 0 0 1 .103-2.613.936.936 0 0 1 .443-.44c.236-.133.468-.26.693-.383.226-.123.447-.24.662-.35a8.5 8.5 0 0 1 .849-.24 7.68 7.68 0 0 1 1.482-.645 19.697 19.697 0 0 0 6.74-6.74c.19-.38.36-.748.515-1.1.155-.352.293-.687.414-1.004a.936.936 0 0 1 .443-.44c.236-.133.468-.26.693-.383.226-.123.447-.24.662-.35a8.5 8.5 0 0 1 .849-.24c.26-.052.514-.099.758-.142a.81.81 0 0 1 .483.067 9.977 9.977 0 0 1 2.106 4.169 9.98 9.98 0 0 1-.103 2.613.936.936 0 0 1-.443.44c-.236.133-.468.26-.693.383-.226.123-.447.24-.662.35a8.5 8.5 0 0 1-.849.24 7.68 7.68 0 0 1-1.482.645 19.697 19.697 0 0 0-6.74 6.74c-.19.38-.36.748-.515 1.1-.155.352-.293.687-.414 1.004a.936.936 0 0 1-.443.44z"/>
+                    <path d="M3 0h6a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                    <path d="M7.5 1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zM3 3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3z"/>
+                    <path d="M11.5 2H13a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-1.5a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5z"/>
                   </svg>
                 </div>
                 <h3 class="feature-title">DOCUMENTACIÓN</h3>
@@ -392,5 +476,72 @@
           </div>
         </div>
       </main>
+
+      <script>
+        // Ocultar botones del carousel después de 4 segundos al hacer clic
+        document.addEventListener('DOMContentLoaded', function() {
+          const carousel = document.getElementById('myCarousel');
+          if (!carousel) return;
+
+          const prevButton = carousel.querySelector('.carousel-control-prev');
+          const nextButton = carousel.querySelector('.carousel-control-next');
+          let hideTimeout = null;
+
+          // Función para ocultar los botones
+          function hideButtons() {
+            if (prevButton) prevButton.classList.add('hide-controls');
+            if (nextButton) nextButton.classList.add('hide-controls');
+          }
+
+          // Función para mostrar los botones
+          function showButtons() {
+            if (prevButton) prevButton.classList.remove('hide-controls');
+            if (nextButton) nextButton.classList.remove('hide-controls');
+          }
+
+          // Función para reiniciar el temporizador
+          function resetHideTimer() {
+            // Limpiar el temporizador anterior si existe
+            if (hideTimeout) {
+              clearTimeout(hideTimeout);
+            }
+            
+            // Mostrar los botones
+            showButtons();
+            
+            // Ocultar después de 3 segundos
+            hideTimeout = setTimeout(function() {
+              hideButtons();
+            }, 3000);
+          }
+
+          // Detectar clic en botón anterior
+          if (prevButton) {
+            prevButton.addEventListener('click', function() {
+              resetHideTimer();
+            });
+          }
+
+          // Detectar clic en botón siguiente
+          if (nextButton) {
+            nextButton.addEventListener('click', function() {
+              resetHideTimer();
+            });
+          }
+
+          // También ocultar cuando el mouse sale del carousel
+          carousel.addEventListener('mouseleave', function() {
+            resetHideTimer();
+          });
+
+          // Mostrar cuando el mouse entra al carousel
+          carousel.addEventListener('mouseenter', function() {
+            if (hideTimeout) {
+              clearTimeout(hideTimeout);
+            }
+            showButtons();
+          });
+        });
+      </script>
 
 <?php include_once 'footer.php'; ?>

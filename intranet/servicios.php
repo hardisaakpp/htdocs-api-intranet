@@ -162,7 +162,7 @@
                       <tr> 
                         <td style="font-size: 0.9rem; vertical-align: middle; text-align: center;"><strong><?php echo htmlspecialchars($a['ser_txt_nombre']); ?></strong></td>
                         <td>
-                          <a href="<?php echo htmlspecialchars($a['ser_txt_enlace']); ?>" target="_blank" onmousedown="showStar()" style="text-decoration: none;">
+                          <a href="<?php echo htmlspecialchars($a['ser_txt_enlace']); ?>" target="_blank" style="text-decoration: none;">
                             <div class="icon-container">
                               <span class="tooltip-text">Pulsa aquí</span>
                               <i class="bi bi-hand-index-thumb-fill hand-icon"></i>
@@ -174,6 +174,18 @@
                 <?php 
                   }                          
                 ?>
+                      <tr>
+                        <td style="font-size: 0.9rem; vertical-align: middle; text-align: center;"><strong>Panel Bendo</strong></td>
+                        <td>
+                          <a href="https://panel.bendo.ec/login" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+                            <div class="icon-container">
+                              <span class="tooltip-text">Pulsa aquí</span>
+                              <i class="bi bi-hand-index-thumb-fill hand-icon"></i>
+                              <div class="star" id="star"><i class="bi bi-star-fill"></i></div>
+                            </div>
+                          </a>
+                        </td>
+                      </tr>
                 </tbody>                              
             </table>
           </div>

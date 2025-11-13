@@ -125,3 +125,6 @@ $passwordHash = password_hash('tu_contraseña', PASSWORD_DEFAULT);
 Para más información o soporte, contacta al equipo de desarrollo.
 
 
+
+
+
