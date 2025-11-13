@@ -193,8 +193,111 @@ if (session_status() === PHP_SESSION_NONE) {
       }
 
       /* Mejoras en la visualización de iconos */
+      .icon-container {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
       .icon-container svg {
         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+      }
+
+      .icon-container.user-authenticated {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .icon-container.user-authenticated .user-info-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #fff;
+        font-size: 0.9rem;
+        font-weight: 500;
+        background-color: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 6px 12px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        white-space: nowrap;
+      }
+
+      .icon-container.user-authenticated .user-info-wrapper:hover {
+        background-color: rgba(255,255,255,0.15);
+      }
+
+      .icon-container.user-authenticated .user-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .icon-container.user-authenticated .user-info-details {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        line-height: 1.2;
+      }
+
+      .icon-container.user-authenticated .user-name {
+        font-weight: 600;
+      }
+
+      .icon-container.user-authenticated .user-role {
+        background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.2) 100%);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 6px;
+        padding: 2px 8px;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .icon-container.user-authenticated .logout-btn {
+        border-radius: 10px;
+        border-width: 1.5px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .icon-container.user-authenticated .logout-btn-mobile {
+        padding: 4px 10px;
+        gap: 6px;
+        font-size: 0.8rem;
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+      }
+
+      @media (max-width: 575.98px) {
+        .icon-container.user-authenticated {
+          flex-direction: column;
+          align-items: stretch;
+          background-color: rgba(0,0,0,0.15);
+          padding: 12px;
+          border-radius: 12px;
+          gap: 12px;
+          margin-top: 12px;
+        }
+
+        .icon-container.user-authenticated .user-info-wrapper {
+          width: 100%;
+          flex-direction: row;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .icon-container.user-authenticated .logout-btn {
+          width: auto;
+          justify-content: center;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .icon-container.user-authenticated .user-info-details {
+          flex: 1;
+          min-width: 0;
+        }
       }
 
     </style>  
@@ -260,52 +363,71 @@ if (session_status() === PHP_SESSION_NONE) {
         <nav class="navbar navbar-expand-md navbar-dark fixed-top" style="background: linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%); box-shadow: 0 2px 12px rgba(0,0,0,0.15); backdrop-filter: blur(10px);">
           <div class="container-fluid">
             <a class="navbar-brand brand-button" href="index.php" title="Haz clic para volver al inicio"><img src="../assets/img/intranet/2.png" width="50" height="36" alt="Logo Intranet" class="logo-animated"></a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" style="border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 4px 8px;">
-              <span class="navbar-toggler-icon"></span>
-            </button>
 
-            <div class="icon-container" style="display: flex; gap: 12px; align-items: center;">
-              <?php
-              // Mostrar información de usuario si está autenticado
-              if (isset($_SESSION['admin_autenticado']) && $_SESSION['admin_autenticado'] === true) {
-                  $usuarioNombre = $_SESSION['usuario_nombre'] ?? 'Usuario';
-                  $usuarioRol = $_SESSION['usuario_rol'] ?? '';
-                  echo '<span class="text-white me-2 d-flex align-items-center" style="font-size: 0.9rem; font-weight: 500; padding: 6px 12px; background-color: rgba(255,255,255,0.1); border-radius: 8px; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor=\'rgba(255,255,255,0.15)\'" onmouseout="this.style.backgroundColor=\'rgba(255,255,255,0.1)\'">';
-                  echo '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle me-2" viewBox="0 0 16 16" style="flex-shrink: 0;">';
-                  echo '<path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>';
-                  echo '<path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>';
-                  echo '</svg>';
-                  echo '<span>' . htmlspecialchars($usuarioNombre) . '</span>';
-                  if ($usuarioRol) {
-                      echo ' <small class="badge ms-2" style="background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.2) 100%); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 2px 8px; font-weight: 500;">' . htmlspecialchars($usuarioRol) . '</small>';
-                  }
-                  echo '</span>';
-                  echo '<a href="logout.php" class="btn btn-outline-light btn-sm d-flex align-items-center gap-1" style="text-decoration: none; border-radius: 8px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-width: 1.5px;" title="Cerrar sesión" onmouseover="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 4px 12px rgba(0,0,0,0.2)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
-                  echo '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">';
-                  echo '<path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>';
-                  echo '<path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>';
-                  echo '</svg>';
-                  echo 'Salir';
-                  echo '</a>';
-              }
-              ?>
-              <button class="btn btn-outline-light d-flex align-items-center gap-2" onclick="abrirCarpeta()" style="border-radius: 10px; border-width: 1.5px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-weight: 500;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)'; this.style.backgroundColor='rgba(255,255,255,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.backgroundColor='transparent'">
+            <div class="d-flex align-items-center ms-auto gap-2">
+              <button class="btn btn-outline-light d-flex align-items-center gap-2 folder-btn" onclick="abrirCarpeta()" style="font-weight: 500; border-radius: 10px; border-width: 1.5px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)'; this.style.backgroundColor='rgba(255,255,255,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'; this.style.backgroundColor='transparent'">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-folder-fill" viewBox="0 0 16 16" style="transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
                   <path d="M9.828 4a.5.5 0 0 1 .354.146l1.5 1.5A.5.5 0 0 1 11.5 6H14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h5.172a.5.5 0 0 1 .354.146l1.5 1.5A.5.5 0 0 1 9.5 3H14a2 2 0 0 1 2 2v1H9.828z"/>
                 </svg>
                 TALENTO HUMANO
               </button>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" style="border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 4px 8px;">
+                <span class="navbar-toggler-icon"></span>
+              </button>
             </div>
 
             <div class="collapse navbar-collapse" id="navbarCollapse">
-              <form class="d-flex ms-auto">
-                <input class="form-control me-2" type="search" placeholder="Buscar..." aria-label="Search" style="border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); background-color: rgba(255,255,255,0.1); color: white; transition: all 0.3s ease;" onfocus="this.style.backgroundColor='rgba(255,255,255,0.2)'; this.style.borderColor='rgba(255,255,255,0.5)'" onblur="this.style.backgroundColor='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.3)'">
-                <button class="btn btn-secondary d-flex align-items-center justify-content-center" type="submit" style="border-radius: 8px; border: none; background-color: rgba(255,255,255,0.2); transition: all 0.3s ease; width: 40px; height: 38px; padding: 0;" aria-label="Buscar" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.3)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.2)'; this.style.transform='translateY(0)'">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                  </svg>
-                </button>
-              </form>
+              <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-3 w-100">
+                <?php
+                  $usuarioAutenticado = isset($_SESSION['admin_autenticado']) && $_SESSION['admin_autenticado'] === true;
+                  $iconContainerClasses = 'icon-container w-100 w-md-auto';
+                  if ($usuarioAutenticado) {
+                      $iconContainerClasses .= ' user-authenticated';
+                      $usuarioNombre = $_SESSION['usuario_nombre'] ?? 'Usuario';
+                      $usuarioRol = $_SESSION['usuario_rol'] ?? '';
+                  }
+                ?>
+                <div class="<?php echo $iconContainerClasses; ?>">
+                  <?php if ($usuarioAutenticado): ?>
+                    <div class="user-info-wrapper" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+                      <span class="user-avatar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                          <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                          <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                        </svg>
+                      </span>
+                      <div class="user-info-details">
+                        <span class="user-name"><?php echo htmlspecialchars($usuarioNombre); ?></span>
+                        <?php if (!empty($usuarioRol)): ?>
+                          <span class="user-role"><?php echo htmlspecialchars($usuarioRol); ?></span>
+                        <?php endif; ?>
+                      </div>
+                  <a href="logout.php" class="btn btn-outline-light btn-sm logout-btn logout-btn-mobile d-sm-none" style="text-decoration: none;" title="Cerrar sesión" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+                      <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+                    </svg>
+                    Salir
+                  </a>
+                    </div>
+                <a href="logout.php" class="btn btn-outline-light btn-sm d-none d-sm-flex align-items-center gap-1 logout-btn" style="text-decoration: none;" title="Cerrar sesión" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+                        <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+                      </svg>
+                      Salir
+                    </a>
+                  <?php endif; ?>
+                </div>
+                <form class="d-flex flex-grow-1 flex-md-grow-0 ms-md-auto">
+                  <input class="form-control me-2" type="search" placeholder="Buscar..." aria-label="Search" style="border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); background-color: rgba(255,255,255,0.1); color: white; transition: all 0.3s ease;" onfocus="this.style.backgroundColor='rgba(255,255,255,0.2)'; this.style.borderColor='rgba(255,255,255,0.5)'" onblur="this.style.backgroundColor='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.3)'">
+                  <button class="btn btn-secondary d-flex align-items-center justify-content-center" type="submit" style="border-radius: 8px; border: none; background-color: rgba(255,255,255,0.2); transition: all 0.3s ease; width: 40px; height: 38px; padding: 0;" aria-label="Buscar" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.3)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.2)'; this.style.transform='translateY(0)'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                      <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                    </svg>
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         </nav>            

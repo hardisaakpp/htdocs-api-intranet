@@ -31,12 +31,12 @@ include_once 'header.php'; ?>
     color: #f8f9fa;
   }
 
-  .icon-container {
+  .tooltip-icon-container {
     position: relative;
     display: inline-block;
   }
 
-  .icon-container:hover .tooltip-text {
+  .tooltip-icon-container:hover .tooltip-text {
     opacity: 1;
   }
 
