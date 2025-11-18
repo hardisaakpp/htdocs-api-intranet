@@ -67,15 +67,10 @@
           animation: scroll 30s linear infinite;
           will-change: transform;
           width: fit-content;
-          cursor: pointer;
         }
 
         .logos-track:hover {
           animation-play-state: paused;
-        }
-
-        .logos-track.reverse {
-          animation: scroll-reverse 30s linear infinite;
         }
 
         @keyframes scroll {
@@ -84,15 +79,6 @@
           }
           to {
             transform: translateX(calc(-100% / 2));
-          }
-        }
-
-        @keyframes scroll-reverse {
-          from {
-            transform: translateX(calc(-100% / 2));
-          }
-          to {
-            transform: translateX(0);
           }
         }
 
@@ -208,8 +194,6 @@
         document.addEventListener('DOMContentLoaded', function() {
           const track = document.querySelector('.logos-track');
           if (track) {
-            let isReversed = false;
-            
             // Esperar a que las imágenes se carguen para calcular correctamente
             const images = track.querySelectorAll('img');
             let loadedImages = 0;
@@ -236,76 +220,8 @@
                     transform: translateX(-${halfWidth}px);
                   }
                 }
-                @keyframes scroll-reverse {
-                  from {
-                    transform: translateX(-${halfWidth}px);
-                  }
-                  to {
-                    transform: translateX(0);
-                  }
-                }
               `;
             };
-            
-            // Función para cambiar la dirección de la animación
-            function toggleDirection() {
-              // Obtener la posición actual del track
-              const computedStyle = window.getComputedStyle(track);
-              const matrix = computedStyle.transform;
-              
-              // Pausar la animación temporalmente
-              track.style.animationPlayState = 'paused';
-              
-              // Obtener el valor actual de translateX
-              let currentX = 0;
-              if (matrix && matrix !== 'none') {
-                const matrixValues = matrix.match(/matrix.*\((.+)\)/);
-                if (matrixValues) {
-                  const values = matrixValues[1].split(', ');
-                  currentX = parseFloat(values[4]) || 0;
-                }
-              }
-              
-              // Cambiar la dirección
-              isReversed = !isReversed;
-              
-              // Aplicar la nueva dirección
-              if (isReversed) {
-                track.classList.add('reverse');
-              } else {
-                track.classList.remove('reverse');
-              }
-              
-              // Calcular el ancho de la mitad del track
-              const trackWidth = track.scrollWidth;
-              const halfWidth = trackWidth / 2;
-              
-              // Ajustar la posición inicial para que la animación continúe suavemente
-              // Si estaba moviéndose hacia la izquierda y ahora va hacia la derecha
-              if (isReversed) {
-                // Establecer la posición inicial para la animación inversa
-                track.style.transform = `translateX(${currentX}px)`;
-              } else {
-                // Establecer la posición inicial para la animación normal
-                track.style.transform = `translateX(${currentX}px)`;
-              }
-              
-              // Reanudar la animación
-              setTimeout(function() {
-                track.style.animationPlayState = 'running';
-                // Limpiar el transform inline después de un momento para que la animación CSS tome control
-                setTimeout(function() {
-                  track.style.transform = '';
-                }, 50);
-              }, 10);
-            }
-            
-            // Agregar event listener para cambiar dirección al hacer clic
-            track.addEventListener('click', function(e) {
-              // Evitar que el clic se propague si se hace clic en una imagen
-              e.stopPropagation();
-              toggleDirection();
-            });
             
             if (images.length === 0) {
               calculateAnimation();

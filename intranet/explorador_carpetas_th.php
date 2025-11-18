@@ -121,39 +121,184 @@ if ($search !== '') {
 ?>
 <?php include_once 'header.php'; ?>
 <style>
+    body {
+        background-color: #0d1117;
+        color: #e6edf3;
+    }
+    .explorer-wrapper {
+        background: #161b22;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        border: 1px solid #30363d;
+        padding: 2rem;
+        margin-top: 1rem;
+    }
+    .explorer-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #30363d;
+    }
+    .explorer-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #e6edf3;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .explorer-header h3 a {
+        color: #e6edf3;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .explorer-header h3 a:hover {
+        color: #58a6ff;
+        text-decoration: none;
+    }
     .folder-icon, .file-icon {
         width: 24px;
-        margin-right: 8px;
-    }
-    .breadcrumb {
-        background-color: #f8f9fa;
+        height: 24px;
+        margin-right: 10px;
+        vertical-align: middle;
+        object-fit: contain;
     }
     form.search-form {
-        max-width: 400px;
-        margin-bottom: 20px;
+        max-width: 500px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: 0.5rem;
+        align-items: stretch;
+    }
+    form.search-form .form-control {
+        background: #0d1117;
+        border: 2px solid #30363d;
+        border-radius: 8px;
+        padding: 0.6rem 1rem;
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+        color: #e6edf3;
+    }
+    form.search-form .form-control::placeholder {
+        color: #6e7681;
+    }
+    form.search-form .form-control:focus {
+        background: #161b22;
+        border-color: #2f81f7;
+        box-shadow: 0 0 0 0.2rem rgba(47, 129, 247, 0.2);
+        color: #e6edf3;
+    }
+    form.search-form .btn {
+        border-radius: 8px;
+        padding: 0.6rem 1.25rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    form.search-form .btn-outline-secondary {
+        background: #21262d;
+        border-color: #30363d;
+        color: #e6edf3;
+    }
+    form.search-form .btn-outline-secondary:hover {
+        background: #30363d;
+        border-color: #484f58;
+        color: #ffffff;
+    }
+    form.search-form .btn-outline-danger {
+        background: #21262d;
+        border-color: #da3633;
+        color: #f85149;
+    }
+    form.search-form .btn-outline-danger:hover {
+        background: #da3633;
+        border-color: #f85149;
+        color: #ffffff;
+    }
+    form.search-form .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .table {
+        background: #161b22;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        margin-bottom: 0;
+        border: 1px solid #30363d;
+        color: #e6edf3;
+    }
+    .table thead th {
+        background: linear-gradient(to bottom, #21262d, #161b22);
+        border-bottom: 2px solid #30363d;
+        font-weight: 600;
+        color: #8b949e;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+    }
+    .table tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #21262d;
+    }
+    .table tbody tr:hover {
+        background-color: #1c2128;
+        transform: scale(1.001);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: #e6edf3;
     }
     .folder-link {
         cursor: pointer;
-        color: #007bff;
+        color: #58a6ff;
         text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
     }
     .folder-link:hover {
-        text-decoration: underline;
-        color: #0056b3;
+        text-decoration: none;
+        color: #79c0ff;
+        text-shadow: 0 0 8px rgba(88, 166, 255, 0.4);
+    }
+    .folder-row {
+        transition: all 0.2s ease;
     }
     .folder-row:hover {
-        background-color: #f8f9fa;
+        background-color: #1c2128 !important;
+        cursor: pointer;
     }
     .file-preview-trigger {
         position: relative;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+    .text-muted {
+        color: #8b949e !important;
+        font-size: 0.9rem;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #8b949e;
+    }
+    .empty-state::before {
+        content: "📂";
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 1rem;
+        opacity: 0.5;
     }
     .file-preview {
         position: fixed;
-        background: white;
-        border: 2px solid #007bff;
+        background: #161b22;
+        border: 2px solid #2f81f7;
         border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.6);
         padding: 10px;
         z-index: 10000;
         width: 320px;
@@ -176,7 +321,7 @@ if ($search !== '') {
         font-weight: bold;
         font-size: 13px;
         margin-bottom: 8px;
-        color: #333;
+        color: #e6edf3;
         word-break: break-word;
         flex-shrink: 0;
         max-height: 36px;
@@ -193,7 +338,7 @@ if ($search !== '') {
         display: block;
         margin: 0 auto;
         border-radius: 4px;
-        background: #f8f9fa;
+        background: #0d1117;
         opacity: 0;
         animation: fadeInImage 0.4s ease-out 0.1s forwards;
         flex-shrink: 0;
@@ -207,6 +352,7 @@ if ($search !== '') {
         opacity: 0;
         animation: fadeInImage 0.4s ease-out 0.1s forwards;
         flex-shrink: 0;
+        background: #0d1117;
     }
     @keyframes fadeInImage {
         from {
@@ -231,38 +377,24 @@ if ($search !== '') {
 </style>
 <body class="p-4">
 <div class="container">
-    <h3>📁 Explorador de Carpetas - TH</h3>
+    <div class="explorer-wrapper">
+        <div class="explorer-header">
+            <h3><a href="explorador_carpetas_th.php">📁 Explorador de Carpetas - TH</a></h3>
+        </div>
 
-    <!-- Formulario de búsqueda -->
-    <form class="search-form d-flex" method="get">
-        <input type="text" name="search" class="form-control me-2" placeholder="Buscar archivo o carpeta..." value="<?php echo htmlspecialchars($search); ?>">
-        <button class="btn btn-outline-secondary" type="submit">Buscar</button>
-        <?php if ($search): ?>
-            <a href="explorador_carpetas_th.php" class="btn btn-outline-danger ms-2">Limpiar</a>
-        <?php endif; ?>
-    </form>
-
-    <!-- Breadcrumb -->
-    <?php if (!$search): ?>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="?">Raíz</a></li>
-                <?php
-                $pathParts = explode('/', trim($relPath, '/'));
-                $pathSoFar = '';
-                foreach ($pathParts as $part) {
-                    if ($part === '') continue;
-                    $pathSoFar .= $part . '/';
-                    echo '<li class="breadcrumb-item"><a href="?path=' . urlencode($pathSoFar) . '">' . htmlspecialchars($part) . '</a></li>';
-                }
-                ?>
-            </ol>
-        </nav>
-    <?php endif; ?>
+        <!-- Formulario de búsqueda -->
+        <form class="search-form" method="get">
+            <input type="text" name="search" class="form-control" placeholder="🔍 Buscar archivo o carpeta..." value="<?php echo htmlspecialchars($search); ?>">
+            <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+            <?php if ($search): ?>
+                <a href="explorador_carpetas_th.php" class="btn btn-outline-danger">Limpiar</a>
+            <?php endif; ?>
+        </form>
 
     <!-- Tabla de resultados -->
+    <div style="overflow-x: auto;">
     <table class="table table-hover table-sm">
-        <thead class="table-light">
+        <thead>
         <tr>
             <th>Nombre</th>
             <th>Ruta</th>
@@ -271,7 +403,7 @@ if ($search !== '') {
         </thead>
         <tbody>
         <?php if (empty($items)): ?>
-            <tr><td colspan="3" class="text-center text-muted">No se encontraron resultados.</td></tr>
+            <tr><td colspan="3" class="empty-state">No se encontraron resultados.</td></tr>
         <?php else: ?>
             <?php foreach ($items as $item): ?>
                 <?php if ($item['es_directorio']): ?>
@@ -318,12 +450,12 @@ if ($search !== '') {
                                     style="cursor: <?php echo $isPdf ? 'pointer' : 'default'; ?>"
                                     onclick="<?php if ($isPdf) echo "openPDFModal('ver_pdf_th.php?file=" . urlencode($item['ruta_relativa']) . "', '" . htmlspecialchars($item['nombre']) . "')"; ?>">
                                 <?php if ($isPdf): ?>
-                                    <span style="cursor:pointer; color:#007bff; text-decoration:underline;"
+                                    <span style="cursor:pointer; color:#58a6ff; text-decoration:underline;"
                                         onclick="event.stopPropagation(); openPDFModal('ver_pdf_th.php?file=<?php echo urlencode($item['ruta_relativa']); ?>', '<?php echo htmlspecialchars($item['nombre']); ?>')">
                                         <?php echo htmlspecialchars($item['nombre']); ?>
                                     </span>
                                 <?php else: ?>
-                                    <span><?php echo htmlspecialchars($item['nombre']); ?></span>
+                                    <span style="color:#e6edf3;"><?php echo htmlspecialchars($item['nombre']); ?></span>
                                 <?php endif; ?>
                             </div>
                         </td>
@@ -335,23 +467,25 @@ if ($search !== '') {
         <?php endif; ?>
         </tbody>
     </table>
+    </div>
+    </div>
 </div>
 
 <!-- Modal Visor PDF -->
 <!-- Preview Tooltip -->
 <div id="filePreview" class="file-preview"></div>
 
-<div id="pdfModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.8); z-index:1000;">
-  <div style="position:relative; width:90%; height:90%; margin:5% auto; background:#fff; border-radius:8px; overflow:hidden;">
-    <div style="display:flex; justify-content:space-between; align-items:center; background:#343a40; color:#fff; padding:10px;">
-      <span id="modalFilename" style="font-weight:bold;"></span>
+<div id="pdfModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.85); z-index:1000;">
+  <div style="position:relative; width:90%; height:90%; margin:5% auto; background:#161b22; border:1px solid #30363d; border-radius:8px; overflow:hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.6);">
+    <div style="display:flex; justify-content:space-between; align-items:center; background:#21262d; border-bottom:1px solid #30363d; color:#e6edf3; padding:12px 16px;">
+      <span id="modalFilename" style="font-weight:600; color:#e6edf3;"></span>
       <div>
-        <button onclick="printPDF()" class="btn btn-sm btn-light me-2">🖨 Imprimir</button>
-        <a id="downloadLink" class="btn btn-sm btn-light me-2" download target="_blank">⬇ Descargar</a>
-        <button onclick="closeModal()" class="btn btn-sm btn-danger">✖ Cerrar</button>
+        <button onclick="printPDF()" style="background:#21262d; border:1px solid #30363d; color:#e6edf3; padding:6px 12px; border-radius:6px; cursor:pointer; margin-right:8px; transition:all 0.2s;" onmouseover="this.style.background='#30363d'; this.style.borderColor='#484f58'" onmouseout="this.style.background='#21262d'; this.style.borderColor='#30363d'">🖨 Imprimir</button>
+        <a id="downloadLink" style="background:#21262d; border:1px solid #30363d; color:#e6edf3; padding:6px 12px; border-radius:6px; cursor:pointer; text-decoration:none; margin-right:8px; display:inline-block; transition:all 0.2s;" onmouseover="this.style.background='#30363d'; this.style.borderColor='#484f58'" onmouseout="this.style.background='#21262d'; this.style.borderColor='#30363d'" download target="_blank">⬇ Descargar</a>
+        <button onclick="closeModal()" style="background:#da3633; border:1px solid #da3633; color:#fff; padding:6px 12px; border-radius:6px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#f85149'; this.style.borderColor='#f85149'" onmouseout="this.style.background='#da3633'; this.style.borderColor='#da3633'">✖ Cerrar</button>
       </div>
     </div>
-    <iframe id="pdfViewer" style="width:100%; height:100%;" frameborder="0"></iframe>
+    <iframe id="pdfViewer" style="width:100%; height:calc(100% - 60px); border:none; background:#0d1117;"></iframe>
   </div>
 </div>
 
