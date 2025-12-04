@@ -26,6 +26,13 @@ if ($currentPath === false || strpos($currentPath, $baseRealPath) !== 0) {
     die("Acceso no permitido");
 }
 
+// Obtener el nombre de la carpeta actual si estamos dentro de una carpeta
+$nombreCarpetaActual = '';
+if (!empty($relPath) && $currentPath !== false) {
+    // Obtener el nombre de la última carpeta del path
+    $nombreCarpetaActual = basename($currentPath);
+}
+
 // Función para buscar recursivamente desde la raíz
 function buscarRecursivo($path, $searchTerm, $baseRealPath) {
     $resultados = [];
@@ -121,41 +128,69 @@ if ($search !== '') {
 ?>
 <?php include_once 'header.php'; ?>
 <style>
-    body {
-        background-color: #0d1117;
-        color: #e6edf3;
-    }
+    /* Estilos base para modo claro */
     .explorer-wrapper {
-        background: #161b22;
+        background: #ffffff;
         border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-        border: 1px solid #30363d;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 1px solid #dee2e6;
         padding: 2rem;
         margin-top: 1rem;
     }
     .explorer-header {
         margin-bottom: 1.5rem;
         padding-bottom: 1rem;
-        border-bottom: 2px solid #30363d;
+        border-bottom: 2px solid #dee2e6;
     }
     .explorer-header h3 {
         margin: 0;
         font-size: 1.5rem;
         font-weight: 600;
-        color: #e6edf3;
+        color: #212529;
         display: flex;
         align-items: center;
         gap: 0.5rem;
     }
     .explorer-header h3 a {
-        color: #e6edf3;
+        color: #212529;
         text-decoration: none;
         transition: all 0.2s ease;
         cursor: pointer;
     }
     .explorer-header h3 a:hover {
-        color: #58a6ff;
+        color: #0d6efd;
         text-decoration: none;
+    }
+    
+    /* Estilos para modo oscuro */
+    [data-bs-theme="dark"] .explorer-wrapper {
+        background: #161b22;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        border: 1px solid #30363d;
+    }
+    [data-bs-theme="dark"] .explorer-header {
+        border-bottom: 2px solid #30363d;
+    }
+    [data-bs-theme="dark"] .explorer-header h3 {
+        color: #e6edf3;
+    }
+    [data-bs-theme="dark"] .explorer-header h3 a {
+        color: #e6edf3;
+    }
+    [data-bs-theme="dark"] .explorer-header h3 a:hover {
+        color: #58a6ff;
+    }
+    .folder-separator {
+        color: #6c757d;
+    }
+    .folder-name {
+        color: #0d6efd;
+    }
+    [data-bs-theme="dark"] .folder-separator {
+        color: #8b949e;
+    }
+    [data-bs-theme="dark"] .folder-name {
+        color: #58a6ff;
     }
     .folder-icon, .file-icon {
         width: 24px;
@@ -172,22 +207,22 @@ if ($search !== '') {
         align-items: stretch;
     }
     form.search-form .form-control {
-        background: #0d1117;
-        border: 2px solid #30363d;
+        background: #ffffff;
+        border: 2px solid #dee2e6;
         border-radius: 8px;
         padding: 0.6rem 1rem;
         transition: all 0.2s ease;
         font-size: 0.95rem;
-        color: #e6edf3;
+        color: #212529;
     }
     form.search-form .form-control::placeholder {
-        color: #6e7681;
+        color: #6c757d;
     }
     form.search-form .form-control:focus {
-        background: #161b22;
-        border-color: #2f81f7;
-        box-shadow: 0 0 0 0.2rem rgba(47, 129, 247, 0.2);
-        color: #e6edf3;
+        background: #ffffff;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        color: #212529;
     }
     form.search-form .btn {
         border-radius: 8px;
@@ -195,22 +230,38 @@ if ($search !== '') {
         font-weight: 500;
         transition: all 0.2s ease;
     }
-    form.search-form .btn-outline-secondary {
+    
+    /* Estilos para modo oscuro - formulario */
+    [data-bs-theme="dark"] form.search-form .form-control {
+        background: #0d1117;
+        border: 2px solid #30363d;
+        color: #e6edf3;
+    }
+    [data-bs-theme="dark"] form.search-form .form-control::placeholder {
+        color: #6e7681;
+    }
+    [data-bs-theme="dark"] form.search-form .form-control:focus {
+        background: #161b22;
+        border-color: #2f81f7;
+        box-shadow: 0 0 0 0.2rem rgba(47, 129, 247, 0.2);
+        color: #e6edf3;
+    }
+    [data-bs-theme="dark"] form.search-form .btn-outline-secondary {
         background: #21262d;
         border-color: #30363d;
         color: #e6edf3;
     }
-    form.search-form .btn-outline-secondary:hover {
+    [data-bs-theme="dark"] form.search-form .btn-outline-secondary:hover {
         background: #30363d;
         border-color: #484f58;
         color: #ffffff;
     }
-    form.search-form .btn-outline-danger {
+    [data-bs-theme="dark"] form.search-form .btn-outline-danger {
         background: #21262d;
         border-color: #da3633;
         color: #f85149;
     }
-    form.search-form .btn-outline-danger:hover {
+    [data-bs-theme="dark"] form.search-form .btn-outline-danger:hover {
         background: #da3633;
         border-color: #f85149;
         color: #ffffff;
@@ -220,19 +271,19 @@ if ($search !== '') {
         box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
     .table {
-        background: #161b22;
+        background: #ffffff;
         border-radius: 8px;
         overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         margin-bottom: 0;
-        border: 1px solid #30363d;
-        color: #e6edf3;
+        border: 1px solid #dee2e6;
+        color: #212529;
     }
     .table thead th {
-        background: linear-gradient(to bottom, #21262d, #161b22);
-        border-bottom: 2px solid #30363d;
+        background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+        border-bottom: 2px solid #dee2e6;
         font-weight: 600;
-        color: #8b949e;
+        color: #495057;
         text-transform: uppercase;
         font-size: 0.85rem;
         letter-spacing: 0.5px;
@@ -240,36 +291,70 @@ if ($search !== '') {
     }
     .table tbody tr {
         transition: all 0.2s ease;
-        border-bottom: 1px solid #21262d;
+        border-bottom: 1px solid #dee2e6;
     }
     .table tbody tr:hover {
-        background-color: #1c2128;
+        background-color: #f8f9fa;
         transform: scale(1.001);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .table tbody td {
         padding: 1rem;
         vertical-align: middle;
+        color: #212529;
+    }
+    
+    /* Estilos para modo oscuro - tabla */
+    [data-bs-theme="dark"] .table {
+        background: #161b22;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        border: 1px solid #30363d;
+        color: #e6edf3;
+    }
+    [data-bs-theme="dark"] .table thead th {
+        background: linear-gradient(to bottom, #21262d, #161b22);
+        border-bottom: 2px solid #30363d;
+        color: #8b949e;
+    }
+    [data-bs-theme="dark"] .table tbody tr {
+        border-bottom: 1px solid #21262d;
+    }
+    [data-bs-theme="dark"] .table tbody tr:hover {
+        background-color: #1c2128;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    [data-bs-theme="dark"] .table tbody td {
         color: #e6edf3;
     }
     .folder-link {
         cursor: pointer;
-        color: #58a6ff;
+        color: #0d6efd;
         text-decoration: none;
         font-weight: 500;
         transition: all 0.2s ease;
     }
     .folder-link:hover {
         text-decoration: none;
-        color: #79c0ff;
-        text-shadow: 0 0 8px rgba(88, 166, 255, 0.4);
+        color: #0a58ca;
     }
     .folder-row {
         transition: all 0.2s ease;
     }
     .folder-row:hover {
-        background-color: #1c2128 !important;
+        background-color: #f8f9fa !important;
         cursor: pointer;
+    }
+    
+    /* Estilos para modo oscuro - enlaces y filas */
+    [data-bs-theme="dark"] .folder-link {
+        color: #58a6ff;
+    }
+    [data-bs-theme="dark"] .folder-link:hover {
+        color: #79c0ff;
+        text-shadow: 0 0 8px rgba(88, 166, 255, 0.4);
+    }
+    [data-bs-theme="dark"] .folder-row:hover {
+        background-color: #1c2128 !important;
     }
     .file-preview-trigger {
         position: relative;
@@ -278,12 +363,20 @@ if ($search !== '') {
         align-items: center;
     }
     .text-muted {
-        color: #8b949e !important;
+        color: #6c757d !important;
         font-size: 0.9rem;
     }
     .empty-state {
         text-align: center;
         padding: 3rem;
+        color: #6c757d;
+    }
+    
+    /* Estilos para modo oscuro - texto y estados vacíos */
+    [data-bs-theme="dark"] .text-muted {
+        color: #8b949e !important;
+    }
+    [data-bs-theme="dark"] .empty-state {
         color: #8b949e;
     }
     .empty-state::before {
@@ -295,10 +388,10 @@ if ($search !== '') {
     }
     .file-preview {
         position: fixed;
-        background: #161b22;
-        border: 2px solid #2f81f7;
+        background: #ffffff;
+        border: 2px solid #0d6efd;
         border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         padding: 10px;
         z-index: 10000;
         width: 320px;
@@ -321,7 +414,7 @@ if ($search !== '') {
         font-weight: bold;
         font-size: 13px;
         margin-bottom: 8px;
-        color: #e6edf3;
+        color: #212529;
         word-break: break-word;
         flex-shrink: 0;
         max-height: 36px;
@@ -338,7 +431,7 @@ if ($search !== '') {
         display: block;
         margin: 0 auto;
         border-radius: 4px;
-        background: #0d1117;
+        background: #f8f9fa;
         opacity: 0;
         animation: fadeInImage 0.4s ease-out 0.1s forwards;
         flex-shrink: 0;
@@ -352,6 +445,136 @@ if ($search !== '') {
         opacity: 0;
         animation: fadeInImage 0.4s ease-out 0.1s forwards;
         flex-shrink: 0;
+        background: #f8f9fa;
+    }
+    
+    /* Estilos para modo oscuro - preview */
+    [data-bs-theme="dark"] .file-preview {
+        background: #161b22;
+        border: 2px solid #2f81f7;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    }
+    [data-bs-theme="dark"] .file-preview .preview-title {
+        color: #e6edf3;
+    }
+    [data-bs-theme="dark"] .file-preview img.preview-image {
+        background: #0d1117;
+    }
+    [data-bs-theme="dark"] .file-preview iframe.preview-iframe {
+        background: #0d1117;
+    }
+    
+    /* Estilos para nombres de archivos */
+    .file-name {
+        color: #212529;
+    }
+    .file-name-pdf {
+        cursor: pointer;
+        color: #0d6efd;
+        text-decoration: underline;
+    }
+    .file-name-pdf:hover {
+        color: #0a58ca;
+    }
+    [data-bs-theme="dark"] .file-name {
+        color: #e6edf3;
+    }
+    [data-bs-theme="dark"] .file-name-pdf {
+        color: #58a6ff;
+    }
+    [data-bs-theme="dark"] .file-name-pdf:hover {
+        color: #79c0ff;
+    }
+    
+    /* Estilos para modal PDF */
+    .pdf-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.85);
+        z-index: 1000;
+    }
+    .pdf-modal-content {
+        position: relative;
+        width: 90%;
+        height: 90%;
+        margin: 5% auto;
+        background: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .pdf-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        color: #212529;
+        padding: 12px 16px;
+    }
+    .pdf-modal-filename {
+        font-weight: 600;
+        color: #212529;
+    }
+    .pdf-modal-btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-right: 8px;
+        transition: all 0.2s;
+        border: 1px solid #dee2e6;
+        background: #ffffff;
+        color: #212529;
+    }
+    .pdf-modal-btn:hover {
+        background: #e9ecef;
+        border-color: #adb5bd;
+    }
+    .pdf-modal-btn-close {
+        background: #dc3545;
+        border: 1px solid #dc3545;
+        color: #fff;
+    }
+    .pdf-modal-btn-close:hover {
+        background: #c82333;
+        border-color: #bd2130;
+    }
+    .pdf-viewer {
+        width: 100%;
+        height: calc(100% - 60px);
+        border: none;
+        background: #f8f9fa;
+    }
+    
+    /* Estilos para modo oscuro - modal PDF */
+    [data-bs-theme="dark"] .pdf-modal-content {
+        background: #161b22;
+        border: 1px solid #30363d;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    }
+    [data-bs-theme="dark"] .pdf-modal-header {
+        background: #21262d;
+        border-bottom: 1px solid #30363d;
+        color: #e6edf3;
+    }
+    [data-bs-theme="dark"] .pdf-modal-filename {
+        color: #e6edf3;
+    }
+    [data-bs-theme="dark"] .pdf-modal-btn {
+        background: #21262d;
+        border: 1px solid #30363d;
+        color: #e6edf3;
+    }
+    [data-bs-theme="dark"] .pdf-modal-btn:hover {
+        background: #30363d;
+        border-color: #484f58;
+    }
+    [data-bs-theme="dark"] .pdf-viewer {
         background: #0d1117;
     }
     @keyframes fadeInImage {
@@ -379,7 +602,13 @@ if ($search !== '') {
 <div class="container">
     <div class="explorer-wrapper">
         <div class="explorer-header">
-            <h3><a href="explorador_carpetas_th.php">📁 Explorador de Carpetas - TH</a></h3>
+            <h3>
+                <a href="explorador_carpetas_th.php">📁 Explorador de Carpetas - TH</a>
+                <?php if (!empty($nombreCarpetaActual)): ?>
+                    <span class="folder-separator" style="margin: 0 0.5rem;">/</span>
+                    <span class="folder-name"><?php echo htmlspecialchars($nombreCarpetaActual); ?></span>
+                <?php endif; ?>
+            </h3>
         </div>
 
         <!-- Formulario de búsqueda -->
@@ -450,12 +679,12 @@ if ($search !== '') {
                                     style="cursor: <?php echo $isPdf ? 'pointer' : 'default'; ?>"
                                     onclick="<?php if ($isPdf) echo "openPDFModal('ver_pdf_th.php?file=" . urlencode($item['ruta_relativa']) . "', '" . htmlspecialchars($item['nombre']) . "')"; ?>">
                                 <?php if ($isPdf): ?>
-                                    <span style="cursor:pointer; color:#58a6ff; text-decoration:underline;"
+                                    <span class="file-name-pdf"
                                         onclick="event.stopPropagation(); openPDFModal('ver_pdf_th.php?file=<?php echo urlencode($item['ruta_relativa']); ?>', '<?php echo htmlspecialchars($item['nombre']); ?>')">
                                         <?php echo htmlspecialchars($item['nombre']); ?>
                                     </span>
                                 <?php else: ?>
-                                    <span style="color:#e6edf3;"><?php echo htmlspecialchars($item['nombre']); ?></span>
+                                    <span class="file-name"><?php echo htmlspecialchars($item['nombre']); ?></span>
                                 <?php endif; ?>
                             </div>
                         </td>
@@ -475,17 +704,17 @@ if ($search !== '') {
 <!-- Preview Tooltip -->
 <div id="filePreview" class="file-preview"></div>
 
-<div id="pdfModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.85); z-index:1000;">
-  <div style="position:relative; width:90%; height:90%; margin:5% auto; background:#161b22; border:1px solid #30363d; border-radius:8px; overflow:hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.6);">
-    <div style="display:flex; justify-content:space-between; align-items:center; background:#21262d; border-bottom:1px solid #30363d; color:#e6edf3; padding:12px 16px;">
-      <span id="modalFilename" style="font-weight:600; color:#e6edf3;"></span>
+<div id="pdfModal" class="pdf-modal">
+  <div class="pdf-modal-content">
+    <div class="pdf-modal-header">
+      <span id="modalFilename" class="pdf-modal-filename"></span>
       <div>
-        <button onclick="printPDF()" style="background:#21262d; border:1px solid #30363d; color:#e6edf3; padding:6px 12px; border-radius:6px; cursor:pointer; margin-right:8px; transition:all 0.2s;" onmouseover="this.style.background='#30363d'; this.style.borderColor='#484f58'" onmouseout="this.style.background='#21262d'; this.style.borderColor='#30363d'">🖨 Imprimir</button>
-        <a id="downloadLink" style="background:#21262d; border:1px solid #30363d; color:#e6edf3; padding:6px 12px; border-radius:6px; cursor:pointer; text-decoration:none; margin-right:8px; display:inline-block; transition:all 0.2s;" onmouseover="this.style.background='#30363d'; this.style.borderColor='#484f58'" onmouseout="this.style.background='#21262d'; this.style.borderColor='#30363d'" download target="_blank">⬇ Descargar</a>
-        <button onclick="closeModal()" style="background:#da3633; border:1px solid #da3633; color:#fff; padding:6px 12px; border-radius:6px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#f85149'; this.style.borderColor='#f85149'" onmouseout="this.style.background='#da3633'; this.style.borderColor='#da3633'">✖ Cerrar</button>
+        <button onclick="printPDF()" class="pdf-modal-btn">🖨 Imprimir</button>
+        <a id="downloadLink" class="pdf-modal-btn" download target="_blank" style="text-decoration:none; display:inline-block;">⬇ Descargar</a>
+        <button onclick="closeModal()" class="pdf-modal-btn pdf-modal-btn-close">✖ Cerrar</button>
       </div>
     </div>
-    <iframe id="pdfViewer" style="width:100%; height:calc(100% - 60px); border:none; background:#0d1117;"></iframe>
+    <iframe id="pdfViewer" class="pdf-viewer"></iframe>
   </div>
 </div>
 
