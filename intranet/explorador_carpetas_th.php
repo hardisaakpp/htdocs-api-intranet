@@ -43,7 +43,10 @@ function buscarRecursivo($path, $searchTerm, $baseRealPath) {
         if ($fullPath === false) continue;
 
         $esDirectorio = is_dir($fullPath);
-        $rutaRelativa = ltrim(str_replace($baseRealPath, '', $fullPath), '/');
+        // Normalizar la ruta relativa para usar siempre forward slashes
+        $rutaRelativa = str_replace($baseRealPath, '', $fullPath);
+        $rutaRelativa = str_replace('\\', '/', $rutaRelativa); // Normalizar a forward slashes
+        $rutaRelativa = ltrim($rutaRelativa, '/\\'); // Eliminar slashes al inicio
         $extension = !$esDirectorio ? strtolower(pathinfo($item, PATHINFO_EXTENSION)) : '';
 
         if (stripos($item, $searchTerm) !== false) {
@@ -114,10 +117,14 @@ if ($search !== '') {
         if ($fullPath === false) continue;
         $esDirectorio = is_dir($fullPath);
         $extension = !$esDirectorio ? strtolower(pathinfo($item, PATHINFO_EXTENSION)) : '';
+        // Normalizar la ruta relativa para usar siempre forward slashes
+        $rutaRelativa = str_replace($baseRealPath, '', $fullPath);
+        $rutaRelativa = str_replace('\\', '/', $rutaRelativa); // Normalizar a forward slashes
+        $rutaRelativa = ltrim($rutaRelativa, '/\\'); // Eliminar slashes al inicio
         $items[] = [
             'nombre' => $item,
             'es_directorio' => $esDirectorio,
-            'ruta_relativa' => ltrim(str_replace($baseRealPath, '', $fullPath), '/'),
+            'ruta_relativa' => $rutaRelativa,
             'ruta_completa' => $fullPath,
             'extension' => $extension,
             'tamaño' => $esDirectorio ? 0 : filesize($fullPath),
@@ -126,7 +133,11 @@ if ($search !== '') {
     }
 }
 ?>
-<?php include_once 'header.php'; ?>
+<?php 
+include_once 'header.php';
+// Verificar si el usuario está autenticado para mostrar botones de edición
+$usuarioAutenticado = isset($_SESSION['admin_autenticado']) && $_SESSION['admin_autenticado'] === true;
+?>
 <style>
     /* Estilos base para modo claro */
     .explorer-wrapper {
@@ -598,6 +609,372 @@ if ($search !== '') {
     .file-preview .preview-detail {
         margin: 4px 0;
     }
+    
+    /* Estilos para botones de acción */
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 0.25rem;
+    }
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: #fff;
+    }
+    .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+    }
+    [data-bs-theme="dark"] .btn-danger {
+        background-color: #da3633;
+        border-color: #da3633;
+    }
+    [data-bs-theme="dark"] .btn-danger:hover {
+        background-color: #f85149;
+        border-color: #f85149;
+    }
+    
+    /* Botón flotante */
+    .floating-upload-btn {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        z-index: 1000;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        font-size: 24px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .floating-upload-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    }
+    .floating-upload-btn:active {
+        transform: scale(0.95);
+    }
+    
+    /* Estilos mejorados para modal de subida */
+    #uploadModal .modal-dialog {
+        max-width: 500px;
+    }
+    
+    .modal-content {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        overflow: hidden;
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 1.25rem 1.5rem;
+    }
+    
+    .modal-header .modal-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.9;
+    }
+    
+    .modal-header .btn-close:hover {
+        opacity: 1;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    /* Área de arrastrar y soltar mejorada */
+    .file-upload-area {
+        border: 3px dashed #dee2e6;
+        border-radius: 12px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .file-upload-area:hover {
+        border-color: #667eea;
+        background: #f0f4ff;
+        transform: translateY(-2px);
+    }
+    
+    .file-upload-area.dragover {
+        border-color: #667eea;
+        background: #e8edff;
+        transform: scale(1.02);
+    }
+    
+    .file-upload-area .upload-icon {
+        font-size: 3rem;
+        margin-bottom: 0.75rem;
+        display: block;
+        opacity: 0.7;
+    }
+    
+    .file-upload-area .upload-text {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.4rem;
+    }
+    
+    .file-upload-area .upload-hint {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 0.75rem;
+    }
+    
+    .file-upload-area .upload-button {
+        display: inline-block;
+        padding: 0.6rem 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .file-upload-area .upload-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .file-input-hidden {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+    }
+    
+    .file-selected-info {
+        display: none;
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: #e7f3ff;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+    }
+    
+    .file-selected-info.show {
+        display: block;
+    }
+    
+    .file-selected-info .file-name {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.25rem;
+    }
+    
+    .file-selected-info .file-size {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    /* Checkbox mejorado */
+    .form-check {
+        padding: 1rem 1rem 1rem 2.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        position: relative;
+    }
+    
+    .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin: 0;
+        flex-shrink: 0;
+        cursor: pointer;
+        position: relative;
+        left: 0;
+    }
+    
+    .form-check-label {
+        margin: 0;
+        font-weight: 500;
+        color: #495057;
+        cursor: pointer;
+        flex: 1;
+    }
+    
+    /* Barra de progreso mejorada */
+    #uploadProgress {
+        margin-top: 1.5rem;
+        height: 8px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #e9ecef;
+    }
+    
+    #uploadProgress .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+    
+    /* Mensajes mejorados */
+    #uploadMessage {
+        margin-top: 1rem;
+        border-radius: 8px;
+        padding: 1rem;
+        font-weight: 500;
+    }
+    
+    #uploadMessage.alert-success {
+        background: #d1e7dd;
+        border: 1px solid #badbcc;
+        color: #0f5132;
+    }
+    
+    #uploadMessage.alert-danger {
+        background: #f8d7da;
+        border: 1px solid #f5c2c7;
+        color: #842029;
+    }
+    
+    #uploadMessage.alert-warning {
+        background: #fff3cd;
+        border: 1px solid #ffecb5;
+        color: #664d03;
+    }
+    
+    /* Footer del modal mejorado */
+    .modal-footer {
+        padding: 1.25rem 1.5rem;
+        border-top: 1px solid #dee2e6;
+        background: #f8f9fa;
+    }
+    
+    .modal-footer .btn {
+        padding: 0.6rem 1.5rem;
+        font-weight: 500;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .modal-footer .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    
+    .modal-footer .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Modo oscuro */
+    [data-bs-theme="dark"] .modal-content {
+        background-color: #161b22;
+        border-color: #30363d;
+    }
+    
+    [data-bs-theme="dark"] .modal-header {
+        background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+    }
+    
+    [data-bs-theme="dark"] .file-upload-area {
+        background: #0d1117;
+        border-color: #30363d;
+    }
+    
+    [data-bs-theme="dark"] .file-upload-area:hover {
+        background: #161b22;
+        border-color: #58a6ff;
+    }
+    
+    [data-bs-theme="dark"] .file-upload-area.dragover {
+        background: #1c2128;
+        border-color: #58a6ff;
+    }
+    
+    [data-bs-theme="dark"] .file-upload-area .upload-text {
+        color: #e6edf3;
+    }
+    
+    [data-bs-theme="dark"] .file-upload-area .upload-hint {
+        color: #8b949e;
+    }
+    
+    [data-bs-theme="dark"] .file-selected-info {
+        background: #1c2128;
+        border-left-color: #58a6ff;
+    }
+    
+    [data-bs-theme="dark"] .file-selected-info .file-name {
+        color: #e6edf3;
+    }
+    
+    [data-bs-theme="dark"] .file-selected-info .file-size {
+        color: #8b949e;
+    }
+    
+    [data-bs-theme="dark"] .form-check {
+        background: #0d1117;
+    }
+    
+    [data-bs-theme="dark"] .form-check-label {
+        color: #e6edf3;
+    }
+    
+    [data-bs-theme="dark"] .modal-footer {
+        background: #0d1117;
+        border-top-color: #30363d;
+    }
+    
+    [data-bs-theme="dark"] #uploadProgress {
+        background: #21262d;
+    }
+    
+    [data-bs-theme="dark"] #uploadMessage.alert-success {
+        background: #1a472a;
+        border-color: #2ea043;
+        color: #3fb950;
+    }
+    
+    [data-bs-theme="dark"] #uploadMessage.alert-danger {
+        background: #3d1f1f;
+        border-color: #da3633;
+        color: #f85149;
+    }
+    
+    [data-bs-theme="dark"] #uploadMessage.alert-warning {
+        background: #3d2e1f;
+        border-color: #d29922;
+        color: #d29922;
+    }
 </style>
 <body class="p-4">
 <div class="container">
@@ -629,11 +1006,14 @@ if ($search !== '') {
             <th>Nombre</th>
             <th>Ruta</th>
             <th>Tipo</th>
+            <?php if ($usuarioAutenticado): ?>
+            <th>Acciones</th>
+            <?php endif; ?>
         </tr>
         </thead>
         <tbody>
         <?php if (empty($items)): ?>
-            <tr><td colspan="3" class="empty-state">No se encontraron resultados.</td></tr>
+            <tr><td colspan="<?php echo $usuarioAutenticado ? '4' : '3'; ?>" class="empty-state">No se encontraron resultados.</td></tr>
         <?php else: ?>
             <?php foreach ($items as $item): ?>
                 <?php if ($item['es_directorio']): ?>
@@ -646,6 +1026,9 @@ if ($search !== '') {
                         </td>
                         <td class="text-muted"><?php echo htmlspecialchars($item['ruta_relativa']); ?></td>
                         <td>Carpeta</td>
+                        <?php if ($usuarioAutenticado): ?>
+                        <td></td>
+                        <?php endif; ?>
                     </tr>
                 <?php else: ?>
                     <?php 
@@ -691,6 +1074,15 @@ if ($search !== '') {
                         </td>
                         <td class="text-muted"><?php echo htmlspecialchars($item['ruta_relativa']); ?></td>
                         <td>Archivo</td>
+                        <?php if ($usuarioAutenticado): ?>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-danger" 
+                                    onclick="event.stopPropagation(); confirmDelete('<?php echo htmlspecialchars($item['ruta_relativa']); ?>', '<?php echo htmlspecialchars($item['nombre']); ?>')"
+                                    title="Eliminar archivo">
+                                🗑️
+                            </button>
+                        </td>
+                        <?php endif; ?>
                     </tr>
                 <?php endif; ?>
             <?php endforeach; ?>
@@ -824,9 +1216,299 @@ if ($search !== '') {
         };
         return text.replace(/[&<>"']/g, m => map[m]);
     }
+    
+    // Funciones CRUD
+    function showUploadModal() {
+        const modal = new bootstrap.Modal(document.getElementById('uploadModal'));
+        document.getElementById('uploadPath').value = '<?php echo htmlspecialchars($relPath); ?>';
+        document.getElementById('uploadForm').reset();
+        document.getElementById('uploadMessage').style.display = 'none';
+        document.getElementById('uploadProgress').style.display = 'none';
+        document.getElementById('fileSelectedInfo').classList.remove('show');
+        document.getElementById('uploadButton').disabled = true;
+        modal.show();
+        
+        // Configurar eventos de arrastrar y soltar
+        setupDragAndDrop();
+    }
+    
+    function setupDragAndDrop() {
+        const uploadArea = document.getElementById('fileUploadArea');
+        const fileInput = document.getElementById('fileInput');
+        
+        // Prevenir comportamiento por defecto del navegador
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Efectos visuales al arrastrar
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.add('dragover');
+            }, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.remove('dragover');
+            }, false);
+        });
+        
+        // Manejar archivo soltado
+        uploadArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect(files[0]);
+            }
+        }, false);
+        
+        // Manejar selección de archivo
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+    }
+    
+    function handleFileSelect(file) {
+        const fileInfo = document.getElementById('fileSelectedInfo');
+        const fileName = document.getElementById('selectedFileName');
+        const fileSize = document.getElementById('selectedFileSize');
+        const uploadButton = document.getElementById('uploadButton');
+        
+        // Mostrar información del archivo
+        fileName.textContent = '📄 ' + file.name;
+        
+        // Formatear tamaño
+        let sizeText = '';
+        if (file.size < 1024) {
+            sizeText = file.size + ' bytes';
+        } else if (file.size < 1024 * 1024) {
+            sizeText = (file.size / 1024).toFixed(2) + ' KB';
+        } else {
+            sizeText = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+        fileSize.textContent = 'Tamaño: ' + sizeText;
+        
+        // Validar tamaño máximo (50MB)
+        const maxSize = 50 * 1024 * 1024;
+        if (file.size > maxSize) {
+            fileSize.textContent = '❌ Tamaño excede el límite de 50MB';
+            fileSize.style.color = '#dc3545';
+            uploadButton.disabled = true;
+            fileInfo.classList.add('show');
+            return;
+        }
+        
+        fileSize.style.color = '';
+        fileInfo.classList.add('show');
+        uploadButton.disabled = false;
+    }
+    
+    function uploadFile() {
+        const form = document.getElementById('uploadForm');
+        const formData = new FormData(form);
+        const progressBar = document.getElementById('uploadProgress');
+        const progressBarInner = progressBar.querySelector('.progress-bar');
+        const messageDiv = document.getElementById('uploadMessage');
+        const uploadButton = document.getElementById('uploadButton');
+        
+        // Validar que se haya seleccionado un archivo
+        const fileInput = document.getElementById('fileInput');
+        if (!fileInput.files || fileInput.files.length === 0) {
+            messageDiv.style.display = 'block';
+            messageDiv.className = 'alert alert-warning';
+            messageDiv.textContent = '⚠️ Por favor selecciona un archivo';
+            return;
+        }
+        
+        // Deshabilitar botón durante la subida
+        uploadButton.disabled = true;
+        uploadButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Subiendo...';
+        
+        progressBar.style.display = 'block';
+        progressBarInner.style.width = '0%';
+        messageDiv.style.display = 'none';
+        
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                progressBarInner.style.width = percentComplete + '%';
+                progressBarInner.textContent = Math.round(percentComplete) + '%';
+            }
+        });
+        
+        xhr.addEventListener('load', function() {
+            progressBar.style.display = 'none';
+            messageDiv.style.display = 'block';
+            uploadButton.disabled = false;
+            uploadButton.innerHTML = '<span style="margin-right: 0.5rem;">📤</span>Subir Archivo';
+            
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        messageDiv.className = 'alert alert-success';
+                        messageDiv.innerHTML = '✅ <strong>' + response.message + '</strong><br>La página se recargará en breve...';
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        messageDiv.className = 'alert alert-danger';
+                        messageDiv.innerHTML = '❌ <strong>Error:</strong> ' + response.error;
+                        if (response.file_exists) {
+                            if (confirm('El archivo ya existe. ¿Deseas sobrescribirlo?')) {
+                                document.getElementById('overwriteCheck').checked = true;
+                                uploadFile();
+                            }
+                        }
+                    }
+                } catch (e) {
+                    messageDiv.className = 'alert alert-danger';
+                    messageDiv.innerHTML = '❌ <strong>Error:</strong> No se pudo procesar la respuesta del servidor';
+                }
+            } else {
+                messageDiv.className = 'alert alert-danger';
+                messageDiv.innerHTML = '❌ <strong>Error:</strong> No se pudo subir el archivo (Código: ' + xhr.status + ')';
+            }
+        });
+        
+        xhr.addEventListener('error', function() {
+            progressBar.style.display = 'none';
+            messageDiv.style.display = 'block';
+            messageDiv.className = 'alert alert-danger';
+            messageDiv.innerHTML = '❌ <strong>Error de conexión:</strong> Verifica tu conexión a internet.';
+            uploadButton.disabled = false;
+            uploadButton.innerHTML = '<span style="margin-right: 0.5rem;">📤</span>Subir Archivo';
+        });
+        
+        xhr.open('POST', 'procesar_archivos_th.php');
+        xhr.send(formData);
+    }
+    
+    function confirmDelete(filePath, fileName) {
+        if (confirm('¿Estás seguro de eliminar el archivo "' + fileName + '"?\n\nEsta acción no se puede deshacer.')) {
+            deleteFile(filePath);
+        }
+    }
+    
+    function deleteFile(filePath) {
+        const formData = new FormData();
+        formData.append('action', 'delete');
+        formData.append('file', filePath);
+        
+        const xhr = new XMLHttpRequest();
+        
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        alert(response.message);
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                } catch (e) {
+                    alert('Error al procesar la respuesta del servidor');
+                }
+            } else {
+                alert('Error al eliminar el archivo (Código: ' + xhr.status + ')');
+            }
+        });
+        
+        xhr.addEventListener('error', function() {
+            alert('Error de conexión. Verifica tu conexión a internet.');
+        });
+        
+        xhr.open('POST', 'procesar_archivos_th.php');
+        xhr.send(formData);
+    }
 </script>
 
+<!-- Modal para subir archivo -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadModalLabel">
+                    <span style="font-size: 1.5rem;">📤</span> Subir Archivo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="upload">
+                    <input type="hidden" name="path" id="uploadPath" value="<?php echo htmlspecialchars($relPath); ?>">
+                    
+                    <!-- Área de arrastrar y soltar -->
+                    <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+                        <span class="upload-icon">📁</span>
+                        <div class="upload-text">Arrastra y suelta tu archivo aquí</div>
+                        <div class="upload-hint">o haz clic para seleccionar</div>
+                        <button type="button" class="upload-button">Seleccionar Archivo</button>
+                        <input type="file" class="file-input-hidden" id="fileInput" name="file" required>
+                    </div>
+                    
+                    <!-- Información del archivo seleccionado -->
+                    <div class="file-selected-info" id="fileSelectedInfo">
+                        <div class="file-name" id="selectedFileName"></div>
+                        <div class="file-size" id="selectedFileSize"></div>
+                    </div>
+                    
+                    <!-- Opciones adicionales -->
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="overwriteCheck" name="overwrite" value="true">
+                        <label class="form-check-label" for="overwriteCheck">
+                            <strong>Sobrescribir</strong> si el archivo ya existe
+                        </label>
+                    </div>
+                    
+                    <!-- Información de límites -->
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: #f8f9fa; border-radius: 8px; font-size: 0.85rem; color: #6c757d;">
+                        <strong>ℹ️ Información:</strong><br>
+                        • Tamaño máximo: <strong>50MB</strong><br>
+                        • Formatos permitidos: PDF, DOC, DOCX, XLS, XLSX, imágenes, videos, etc.
+                    </div>
+                    
+                    <!-- Barra de progreso -->
+                    <div id="uploadProgress" class="progress" style="display: none; margin-top: 1.5rem;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%">0%</div>
+                    </div>
+                    
+                    <!-- Mensajes -->
+                    <div id="uploadMessage" class="alert" style="display: none; margin-top: 1rem;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="uploadButton" onclick="uploadFile()" disabled>
+                    <span style="margin-right: 0.5rem;">📤</span>Subir Archivo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Botón flotante para subir archivo (solo si está autenticado) -->
+<?php if ($usuarioAutenticado): ?>
+<button type="button" class="btn btn-primary floating-upload-btn" 
+        onclick="showUploadModal()" 
+        title="Subir archivo a esta carpeta">
+    ➕
+</button>
+<?php endif; ?>
 
 </body>
 <?php include_once 'footer.php'; ?>
