@@ -480,21 +480,21 @@ $usuarioAutenticado = isset($_SESSION['admin_autenticado']) && $_SESSION['admin_
     .file-name {
         color: #212529;
     }
-    .file-name-pdf {
+    .file-name-pdf, .file-name-video {
         cursor: pointer;
         color: #0d6efd;
         text-decoration: underline;
     }
-    .file-name-pdf:hover {
+    .file-name-pdf:hover, .file-name-video:hover {
         color: #0a58ca;
     }
     [data-bs-theme="dark"] .file-name {
         color: #e6edf3;
     }
-    [data-bs-theme="dark"] .file-name-pdf {
+    [data-bs-theme="dark"] .file-name-pdf, [data-bs-theme="dark"] .file-name-video {
         color: #58a6ff;
     }
-    [data-bs-theme="dark"] .file-name-pdf:hover {
+    [data-bs-theme="dark"] .file-name-pdf:hover, [data-bs-theme="dark"] .file-name-video:hover {
         color: #79c0ff;
     }
     
@@ -588,6 +588,16 @@ $usuarioAutenticado = isset($_SESSION['admin_autenticado']) && $_SESSION['admin_
     }
     [data-bs-theme="dark"] .pdf-viewer {
         background: #0d1117;
+    }
+    .video-viewer {
+        width: 100%;
+        height: calc(100% - 60px);
+        border: none;
+        background: #000000;
+        outline: none;
+    }
+    [data-bs-theme="dark"] .video-viewer {
+        background: #000000;
     }
     @keyframes fadeInImage {
         from {
@@ -1034,6 +1044,7 @@ $usuarioAutenticado = isset($_SESSION['admin_autenticado']) && $_SESSION['admin_
                     <?php 
                     $isPdf = $item['extension'] === 'pdf';
                     $isImagen = in_array($item['extension'], ['jpg', 'jpeg', 'png', 'gif']);
+                    $isVideo = in_array($item['extension'], ['mp4', 'avi', 'mov', 'mkv', 'webm']);
                     $tamañoFormateado = $item['tamaño'] > 0 ? number_format($item['tamaño'] / 1024, 2) . ' KB' : '0 KB';
                     if ($item['tamaño'] > 1024 * 1024) {
                         $tamañoFormateado = number_format($item['tamaño'] / (1024 * 1024), 2) . ' MB';
@@ -1047,6 +1058,9 @@ $usuarioAutenticado = isset($_SESSION['admin_autenticado']) && $_SESSION['admin_
                     } elseif ($isPdf) {
                         $previewUrl = 'ver_pdf_th.php?file=' . urlencode($item['ruta_relativa']);
                         $previewType = 'pdf';
+                    } elseif ($isVideo) {
+                        $previewUrl = 'ver_pdf_th.php?file=' . urlencode($item['ruta_relativa']);
+                        $previewType = 'video';
                     }
                     ?>
                     <tr>
@@ -1060,11 +1074,22 @@ $usuarioAutenticado = isset($_SESSION['admin_autenticado']) && $_SESSION['admin_
                                  data-file-type="<?php echo htmlspecialchars(strtoupper($item['extension'] ?: 'Archivo')); ?>">
                                 <img src="<?php echo obtenerIconoPorExtension($item['nombre']); ?>"
                                     class="file-icon"
-                                    style="cursor: <?php echo $isPdf ? 'pointer' : 'default'; ?>"
-                                    onclick="<?php if ($isPdf) echo "openPDFModal('ver_pdf_th.php?file=" . urlencode($item['ruta_relativa']) . "', '" . htmlspecialchars($item['nombre']) . "')"; ?>">
+                                    style="cursor: <?php echo ($isPdf || $isVideo) ? 'pointer' : 'default'; ?>"
+                                    onclick="<?php 
+                                        if ($isPdf) {
+                                            echo "openPDFModal('ver_pdf_th.php?file=" . urlencode($item['ruta_relativa']) . "', '" . htmlspecialchars($item['nombre']) . "')";
+                                        } elseif ($isVideo) {
+                                            echo "openVideoModal('ver_pdf_th.php?file=" . urlencode($item['ruta_relativa']) . "', '" . htmlspecialchars($item['nombre']) . "')";
+                                        }
+                                    ?>">
                                 <?php if ($isPdf): ?>
                                     <span class="file-name-pdf"
                                         onclick="event.stopPropagation(); openPDFModal('ver_pdf_th.php?file=<?php echo urlencode($item['ruta_relativa']); ?>', '<?php echo htmlspecialchars($item['nombre']); ?>')">
+                                        <?php echo htmlspecialchars($item['nombre']); ?>
+                                    </span>
+                                <?php elseif ($isVideo): ?>
+                                    <span class="file-name-video"
+                                        onclick="event.stopPropagation(); openVideoModal('ver_pdf_th.php?file=<?php echo urlencode($item['ruta_relativa']); ?>', '<?php echo htmlspecialchars($item['nombre']); ?>')">
                                         <?php echo htmlspecialchars($item['nombre']); ?>
                                     </span>
                                 <?php else: ?>
@@ -1111,6 +1136,22 @@ $usuarioAutenticado = isset($_SESSION['admin_autenticado']) && $_SESSION['admin_
   </div>
 </div>
 
+<!-- Modal Visor Video -->
+<div id="videoModal" class="pdf-modal">
+  <div class="pdf-modal-content">
+    <div class="pdf-modal-header">
+      <span id="videoModalFilename" class="pdf-modal-filename"></span>
+      <div>
+        <a id="videoDownloadLink" class="pdf-modal-btn" download target="_blank" style="text-decoration:none; display:inline-block;">⬇ Descargar</a>
+        <button onclick="closeVideoModal()" class="pdf-modal-btn pdf-modal-btn-close">✖ Cerrar</button>
+      </div>
+    </div>
+    <video id="videoViewer" class="video-viewer" controls autoplay>
+      Tu navegador no soporta la reproducción de video.
+    </video>
+  </div>
+</div>
+
 <script>
     function openPDFModal(pdfUrl, filename) {
         document.getElementById('pdfViewer').src = pdfUrl;
@@ -1129,6 +1170,59 @@ $usuarioAutenticado = isset($_SESSION['admin_autenticado']) && $_SESSION['admin_
         iframe.contentWindow.focus();
         iframe.contentWindow.print();
     }
+
+    function openVideoModal(videoUrl, filename) {
+        const videoElement = document.getElementById('videoViewer');
+        const downloadLink = document.getElementById('videoDownloadLink');
+        const modalFilename = document.getElementById('videoModalFilename');
+        const modal = document.getElementById('videoModal');
+        
+        videoElement.src = videoUrl;
+        downloadLink.href = videoUrl;
+        modalFilename.innerText = filename;
+        modal.style.display = 'block';
+        
+        // Cargar el video
+        videoElement.load();
+        
+        // Intentar reproducir automáticamente
+        // Nota: Algunos navegadores pueden bloquear el autoplay con sonido
+        videoElement.play().catch(function(error) {
+            // Si el autoplay falla (por políticas del navegador), el usuario puede hacer clic en play manualmente
+            console.log('Autoplay bloqueado por el navegador:', error);
+        });
+    }
+
+    function closeVideoModal() {
+        const modal = document.getElementById('videoModal');
+        const videoElement = document.getElementById('videoViewer');
+        
+        modal.style.display = 'none';
+        // Pausar y limpiar el video
+        videoElement.pause();
+        videoElement.src = '';
+    }
+    
+    // Cerrar modal de video con ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const videoModal = document.getElementById('videoModal');
+            if (videoModal && videoModal.style.display === 'block') {
+                closeVideoModal();
+            }
+            const pdfModal = document.getElementById('pdfModal');
+            if (pdfModal && pdfModal.style.display === 'block') {
+                closeModal();
+            }
+        }
+    });
+    
+    // Cerrar modal de video al hacer click fuera del contenido
+    document.getElementById('videoModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeVideoModal();
+        }
+    });
 
     // Sistema de preview al hacer hover
     let previewTimeout;
@@ -1165,6 +1259,8 @@ $usuarioAutenticado = isset($_SESSION['admin_autenticado']) && $_SESSION['admin_
         const previewType = element.getAttribute('data-preview-type');
         const previewUrl = element.getAttribute('data-preview-url');
         const fileName = element.getAttribute('data-file-name');
+        const fileSize = element.getAttribute('data-file-size');
+        const fileType = element.getAttribute('data-file-type');
         
         let previewContent = '<div class="preview-title">' + escapeHtml(fileName) + '</div>';
         
@@ -1172,6 +1268,13 @@ $usuarioAutenticado = isset($_SESSION['admin_autenticado']) && $_SESSION['admin_
             previewContent += '<img src="' + escapeHtml(previewUrl) + '" class="preview-image" alt="Preview">';
         } else if (previewType === 'pdf' && previewUrl) {
             previewContent += '<iframe src="' + escapeHtml(previewUrl) + '" class="preview-iframe"></iframe>';
+        } else if (previewType === 'video' && previewUrl) {
+            previewContent += '<div style="padding: 2rem; text-align: center; color: #6c757d;">';
+            previewContent += '<div style="font-size: 3rem; margin-bottom: 1rem;">🎬</div>';
+            previewContent += '<div style="font-weight: 600; margin-bottom: 0.5rem;">Video ' + escapeHtml(fileType) + '</div>';
+            previewContent += '<div style="font-size: 0.85rem;">Tamaño: ' + escapeHtml(fileSize) + '</div>';
+            previewContent += '<div style="font-size: 0.75rem; margin-top: 0.5rem; color: #0d6efd;">Haz clic para reproducir</div>';
+            previewContent += '</div>';
         }
         
         previewElement.innerHTML = previewContent;

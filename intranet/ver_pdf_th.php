@@ -44,6 +44,10 @@ $mimeTypes = [
     'rar' => 'application/x-rar-compressed',
     'mp3' => 'audio/mpeg',
     'mp4' => 'video/mp4',
+    'avi' => 'video/x-msvideo',
+    'mov' => 'video/quicktime',
+    'mkv' => 'video/x-matroska',
+    'webm' => 'video/webm',
 ];
 
 $contentType = $mimeTypes[$extension] ?? 'application/octet-stream';
