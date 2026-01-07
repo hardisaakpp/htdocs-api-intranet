@@ -108,7 +108,9 @@
       margin: 1.5rem auto 3rem;
       display: flex;
       justify-content: center;
-      max-width: 360px;
+      gap: 1rem;
+      flex-wrap: wrap;
+      max-width: 760px;
     }
 
     .tooltip-text {
@@ -238,6 +240,15 @@
           TALENTO HUMANO
         </button>
       </div>
+      <div class="icon-container">
+        <span class="tooltip-text">Abrir carpeta</span>
+        <button class="btn btn-outline-primary d-inline-flex align-items-center gap-2" onclick="abrirCarpetaSistemas()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-folder-fill" viewBox="0 0 16 16">
+            <path d="M9.828 4a.5.5 0 0 1 .354.146l1.5 1.5A.5.5 0 0 1 11.5 6H14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h5.172a.5.5 0 0 1 .354.146l1.5 1.5A.5.5 0 0 1 9.5 3H14a2 2 0 0 1 2 2v1H9.828z"/>
+          </svg>
+          SISTEMAS
+        </button>
+      </div>
     </div>
 
   </main>
@@ -250,6 +261,10 @@
   function abrirCarpeta() {
       // Redirige a una vista de exploración de carpetas (puedes crear una página tipo file browser)
       window.location.href = "explorador_carpetas_th.php";
+    }
+
+  function abrirCarpetaSistemas() {
+      window.location.href = "explorador_carpetas_sistemas.php";
     }
 
   $(document).ready(function() {
